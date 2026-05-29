@@ -1,0 +1,490 @@
+
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Ultra Device Dashboard</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+
+*{
+margin:0;
+padding:0;
+box-sizing:border-box;
+font-family:'Poppins',sans-serif;
+}
+
+body{
+background:#020617;
+color:#fff;
+min-height:100vh;
+padding:30px;
+overflow-x:hidden;
+
+background-image:
+radial-gradient(circle at top left,#0f766e33,transparent 30%),
+radial-gradient(circle at bottom right,#7c3aed33,transparent 30%);
+}
+
+.container{
+max-width:1400px;
+margin:auto;
+}
+
+.title{
+text-align:center;
+margin-bottom:40px;
+}
+
+.title h1{
+font-size:3rem;
+font-weight:700;
+
+background:linear-gradient(to right,#67e8f9,#a78bfa);
+-webkit-background-clip:text;
+-webkit-text-fill-color:transparent;
+}
+
+.title p{
+color:#94a3b8;
+margin-top:10px;
+}
+
+.grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+gap:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.05);
+border:1px solid rgba(255,255,255,0.08);
+backdrop-filter:blur(15px);
+border-radius:25px;
+padding:25px;
+transition:.4s;
+position:relative;
+overflow:hidden;
+}
+
+.card::before{
+content:"";
+position:absolute;
+inset:0;
+background:linear-gradient(135deg,rgba(255,255,255,.08),transparent);
+pointer-events:none;
+}
+
+.card:hover{
+transform:translateY(-5px) scale(1.01);
+box-shadow:0 0 30px rgba(103,232,249,.15);
+border-color:#67e8f955;
+}
+
+.card h2{
+margin-bottom:20px;
+font-size:1.2rem;
+color:#67e8f9;
+}
+
+.item{
+margin-bottom:15px;
+padding-bottom:10px;
+border-bottom:1px solid rgba(255,255,255,.06);
+}
+
+.label{
+font-size:.8rem;
+color:#94a3b8;
+margin-bottom:4px;
+display:block;
+}
+
+.value{
+font-size:.95rem;
+word-break:break-word;
+}
+
+.actions{
+display:flex;
+gap:15px;
+justify-content:center;
+margin-top:40px;
+flex-wrap:wrap;
+}
+
+button{
+padding:14px 28px;
+border:none;
+border-radius:14px;
+background:linear-gradient(135deg,#06b6d4,#7c3aed);
+color:#fff;
+font-size:1rem;
+font-weight:600;
+cursor:pointer;
+transition:.3s;
+}
+
+button:hover{
+transform:scale(1.05);
+}
+
+.footer{
+text-align:center;
+margin-top:30px;
+color:#64748b;
+}
+
+video{
+width:100%;
+border-radius:15px;
+margin-top:15px;
+}
+
+canvas{
+display:none;
+}
+
+@media(max-width:768px){
+
+.title h1{
+font-size:2.2rem;
+}
+
+}
+
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<div class="title">
+<h1>Ultra Device Dashboard</h1>
+<p>Advanced Browser & Device Analytics</p>
+</div>
+
+<div class="grid" id="infoGrid"></div>
+
+<div class="actions">
+<button onclick="copyInfo()">Copy Info</button>
+<button onclick="downloadInfo()">Download Report</button>
+<button onclick="toggleFullscreen()">Fullscreen</button>
+<button onclick="vibratePhone()">Vibrate</button>
+</div>
+
+<div class="footer">
+Premium Device Intelligence System
+</div>
+
+</div>
+
+<script>
+
+const grid = document.getElementById('infoGrid');
+
+function addCard(title,data){
+
+let html = `
+<div class="card">
+<h2>${title}</h2>
+`;
+
+for(let key in data){
+
+html += `
+<div class="item">
+<span class="label">${key}</span>
+<span class="value">${data[key]}</span>
+</div>
+`;
+
+}
+
+html += `</div>`;
+
+grid.innerHTML += html;
+
+}
+
+async function getIP(){
+
+try{
+
+const res = await fetch('https://api.ipify.org?format=json');
+const data = await res.json();
+
+return data.ip;
+
+}catch{
+
+return 'Unavailable';
+
+}
+
+}
+
+async function loadInfo(){
+
+const ip = await getIP();
+
+const battery = navigator.getBattery
+? await navigator.getBattery()
+: null;
+
+const browserData = {
+
+'Browser Name':navigator.appCodeName,
+'User Agent':navigator.userAgent,
+'Language':navigator.language,
+'Cookies Enabled':navigator.cookieEnabled,
+'Online Status':navigator.onLine ? 'Online' : 'Offline',
+'Timezone':Intl.DateTimeFormat().resolvedOptions().timeZone,
+'Current Time':new Date().toLocaleString()
+
+};
+
+const deviceData = {
+
+'Platform':navigator.platform,
+'RAM':navigator.deviceMemory
+? navigator.deviceMemory + ' GB'
+: 'Unknown',
+
+'CPU Cores':navigator.hardwareConcurrency || 'Unknown',
+
+'Touch Support':'ontouchstart' in window,
+
+'Dark Mode':window.matchMedia('(prefers-color-scheme: dark)').matches,
+
+'Bluetooth Support':navigator.bluetooth
+? 'Supported'
+: 'Not Supported'
+
+};
+
+const screenData = {
+
+'Screen Resolution':screen.width + ' x ' + screen.height,
+
+'Viewport':window.innerWidth + ' x ' + window.innerHeight,
+
+'Color Depth':screen.colorDepth,
+
+'Pixel Ratio':window.devicePixelRatio,
+
+'Orientation':screen.orientation?.type || 'Unknown'
+
+};
+
+const storageData = {
+
+'Local Storage':window.localStorage
+? 'Supported'
+: 'Not Supported',
+
+'Session Storage':window.sessionStorage
+? 'Supported'
+: 'Not Supported',
+
+'WebGL':!!window.WebGLRenderingContext
+
+};
+
+const networkData = {
+
+'IP Address':ip,
+
+'Connection Type':navigator.connection?.effectiveType || 'Unknown',
+
+'Downlink Speed':navigator.connection?.downlink || 'Unknown',
+
+'RTT':navigator.connection?.rtt || 'Unknown'
+
+};
+
+const batteryData = battery
+? {
+
+'Battery Level':Math.floor(battery.level * 100) + '%',
+
+'Charging':battery.charging ? 'Yes' : 'No'
+
+}
+: {
+
+'Battery':'Not Supported'
+
+};
+
+addCard('Browser Information',browserData);
+
+addCard('Device Information',deviceData);
+
+addCard('Screen Information',screenData);
+
+addCard('Storage & Graphics',storageData);
+
+addCard('Network Information',networkData);
+
+addCard('Battery Information',batteryData);
+
+if(navigator.geolocation){
+
+navigator.geolocation.getCurrentPosition(pos=>{
+
+addCard('GPS Location',{
+
+'Latitude':pos.coords.latitude,
+
+'Longitude':pos.coords.longitude,
+
+'Accuracy':pos.coords.accuracy + ' meters'
+
+});
+
+});
+
+}
+
+navigator.permissions?.query({name:'camera'})
+.then(res=>{
+
+addCard('Camera Permission',{
+
+'Status':res.state
+
+});
+
+});
+
+navigator.permissions?.query({name:'microphone'})
+.then(res=>{
+
+addCard('Microphone Permission',{
+
+'Status':res.state
+
+});
+
+});
+
+if('DeviceOrientationEvent' in window){
+
+window.addEventListener('deviceorientation',event=>{
+
+document.getElementById('gyroData')?.remove();
+
+const card = document.createElement('div');
+
+card.className = 'card';
+card.id = 'gyroData';
+
+card.innerHTML = `
+<h2>Gyroscope</h2>
+
+<div class="item">
+<span class="label">Alpha</span>
+<span class="value">${event.alpha}</span>
+</div>
+
+<div class="item">
+<span class="label">Beta</span>
+<span class="value">${event.beta}</span>
+</div>
+
+<div class="item">
+<span class="label">Gamma</span>
+<span class="value">${event.gamma}</span>
+</div>
+`;
+
+grid.appendChild(card);
+
+});
+
+}
+
+}
+
+function copyInfo(){
+
+navigator.clipboard.writeText(document.body.innerText);
+
+alert('Device Information Copied');
+
+}
+
+function downloadInfo(){
+
+const blob = new Blob(
+[document.body.innerText],
+{type:'text/plain'}
+);
+
+const a = document.createElement('a');
+
+a.href = URL.createObjectURL(blob);
+
+a.download = 'device-info.txt';
+
+a.click();
+
+}
+
+function toggleFullscreen(){
+
+if(!document.fullscreenElement){
+
+document.documentElement.requestFullscreen();
+
+}else{
+
+document.exitFullscreen();
+
+}
+
+}
+
+function vibratePhone(){
+
+if(navigator.vibrate){
+
+navigator.vibrate([200,100,200]);
+
+alert('Vibration Triggered');
+
+}else{
+
+alert('Vibration Not Supported');
+
+}
+
+}
+
+loadInfo();
+
+setInterval(()=>{
+
+const timeElement = document.querySelector('.value');
+
+if(timeElement){
+
+timeElement.innerText = new Date().toLocaleString();
+
+}
+
+},1000);
+
+</script>
+
+</body>
+  </html>
